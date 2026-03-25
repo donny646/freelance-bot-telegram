@@ -1,5 +1,16 @@
 # Workspace
 
+## Railway Deployment
+
+Files added for Railway hosting:
+- `main.py` — root entry point (`python main.py` from repo root)
+- `requirements.txt` — Python dependencies for nixpacks
+- `.python-version` — pins Python 3.11
+- `railway.toml` — Railway build/deploy config (start command, restart policy)
+- `.gitignore` — excludes `.db`, `node_modules`, Replit-specific files
+
+**Important:** The bot uses SQLite (`bot/freelancer_bot.db`). On Railway, attach a **Volume** mounted at `/app/bot/` to persist data across restarts.
+
 ## Overview
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.

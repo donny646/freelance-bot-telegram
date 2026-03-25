@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Database (do NOT commit the live DB)
+*.db
+*.sqlite
+*.sqlite3
+
+# Node / pnpm
+node_modules/
+.pnpm-store/
+dist/
+.cache/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Replit-specific
+.replit
+replit.nix
+.upm/
+.config/
+.pythonlibs/
+uv.lock
+pnpm-lock.yaml
+
+# OS
+.DS_Store
+Thumbs.db
