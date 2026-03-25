@@ -8,7 +8,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from bot.database.db import init_db
-from bot.handlers import start, income, clients, projects, analytics, reminders, payment, settings
+from bot.handlers import start, income, clients, projects, analytics, reminders, payment, settings, admin
 from bot.middlewares.subscription import SubscriptionMiddleware
 from bot.utils.scheduler import start_scheduler, stop_scheduler
 
@@ -38,6 +38,7 @@ async def main():
     dp.callback_query.middleware(SubscriptionMiddleware())
 
     # Router order matters — payment first for PreCheckoutQuery
+    dp.include_router(admin.router)
     dp.include_router(payment.router)
     dp.include_router(start.router)
     dp.include_router(settings.router)

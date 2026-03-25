@@ -492,3 +492,69 @@ async def mark_crypto_invoice_paid(invoice_id: int):
         await conn.execute(
             "UPDATE crypto_invoices SET status='paid' WHERE invoice_id=$1", invoice_id
         )
+
+
+# ===== ADMIN =====
+
+async def admin_get_stats() -> dict:
+    now = datetime.now().isoformat()
+    trial_cutoff = (datetime.now() - timedelta(days=7)).isoformat()
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT COUNT(*) as cnt FROM users")
+        total_users = row["cnt"]
+
+        row = await conn.fetchrow(
+            "SELECT COUNT(*) as cnt FROM users WHERE subscription_until > $1", now
+        )
+        active_subs = row["cnt"]
+
+        row = await conn.fetchrow(
+            """SELECT COUNT(*) as cnt FROM users
+               WHERE (subscription_until IS NULL OR subscription_until <= $1)
+               AND trial_started >= $2""",
+            now, trial_cutoff,
+        )
+        on_trial = row["cnt"]
+
+        expired = total_users - active_subs - on_trial
+
+        row = await conn.fetchrow("SELECT COALESCE(SUM(amount), 0) as total FROM incomes")
+        total_income = row["total"]
+
+        row = await conn.fetchrow("SELECT COUNT(*) as cnt FROM projects")
+        total_projects = row["cnt"]
+
+        row = await conn.fetchrow("SELECT COUNT(*) as cnt FROM clients")
+        total_clients = row["cnt"]
+
+    return {
+        "total_users": total_users,
+        "active_subs": active_subs,
+        "on_trial": on_trial,
+        "expired": max(0, expired),
+        "total_income": total_income,
+        "total_projects": total_projects,
+        "total_clients": total_clients,
+    }
+
+
+async def admin_get_recent_users(limit: int = 15) -> list:
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT user_id, username, full_name, subscription_until, trial_started FROM users ORDER BY created_at DESC LIMIT $1",
+            limit,
+        )
+        return [dict(r) for r in rows]
+
+
+async def admin_grant_subscription(user_id: int, months: int):
+    await set_subscription(user_id, months)
+
+
+async def admin_get_all_user_ids() -> list:
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch("SELECT user_id FROM users WHERE is_active = 1")
+        return [r["user_id"] for r in rows]

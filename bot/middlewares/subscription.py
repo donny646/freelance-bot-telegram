@@ -7,7 +7,8 @@ from bot.database.db import check_subscription, create_or_update_user
 
 logger = logging.getLogger(__name__)
 
-FREE_COMMANDS = {"/start", "/help", "/buy", "/status"}
+ADMIN_IDS = {6502920835}
+FREE_COMMANDS = {"/start", "/help", "/buy", "/status", "/admin"}
 
 # Callback prefixes that are allowed without a subscription
 FREE_CALLBACK_PREFIXES = (
@@ -50,6 +51,9 @@ class SubscriptionMiddleware(BaseMiddleware):
             if user:
                 await create_or_update_user(user.id, user.username or "", user.full_name or "")
 
+            if user and user.id in ADMIN_IDS:
+                return await handler(event, data)
+
             for cmd in FREE_COMMANDS:
                 if text.startswith(cmd):
                     return await handler(event, data)
@@ -60,6 +64,9 @@ class SubscriptionMiddleware(BaseMiddleware):
 
             if user:
                 await create_or_update_user(user.id, user.username or "", user.full_name or "")
+
+            if user and user.id in ADMIN_IDS:
+                return await handler(event, data)
 
             for prefix in FREE_CALLBACK_PREFIXES:
                 if cb_data.startswith(prefix):
